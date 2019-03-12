@@ -638,7 +638,6 @@ const Stream = createReactClass({
     let body;
     const project = this.getProject();
 
-    console.log(ErrorRobot);
     if (project.firstEvent) {
       ConfigStore.set('sentFirstEvent', project.firstEvent);
     }
