@@ -1,10 +1,11 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import createReactClass from 'create-react-class';
 import {browserHistory} from 'react-router';
 import * as Sentry from '@sentry/browser';
 
 import {analytics, amplitude} from 'app/utils/analytics';
-import ApiMixin from 'app/mixins/apiMixin';
+import withApi from 'app/utils/withApi';
 import CreateSampleEvent from 'app/components/createSampleEvent';
 import ProjectContext from 'app/views/projects/projectContext';
 import ProjectDocsContext from 'app/views/projectInstall/docsContext';
@@ -14,11 +15,13 @@ import Waiting from 'app/views/onboarding/configure/waiting';
 import {t} from 'app/locale';
 
 const Configure = createReactClass({
+  propTypes: {
+    api: PropTypes.object,
+  },
   displayName: 'Configure',
   contextTypes: {
     organization: SentryTypes.Organization,
   },
-  mixins: [ApiMixin],
 
   getInitialState() {
     return {
@@ -95,7 +98,7 @@ const Configure = createReactClass({
   fetchEventData() {
     const {orgId, projectId} = this.props.params;
 
-    this.api.request(`/projects/${orgId}/${projectId}/events/`, {
+    this.props.api.request(`/projects/${orgId}/${projectId}/events/`, {
       method: 'GET',
       success: data => {
         this.setState({
@@ -169,4 +172,6 @@ const Configure = createReactClass({
   },
 });
 
-export default Configure;
+export {Configure};
+
+export default withApi(Configure);

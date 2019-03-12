@@ -1,9 +1,10 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import createReactClass from 'create-react-class';
 import styled from 'react-emotion';
 
 import Tooltip from 'app/components/tooltip';
-import ApiMixin from 'app/mixins/apiMixin';
+import withApi from 'app/utils/withApi';
 import {addErrorMessage, addSuccessMessage} from 'app/actionCreators/indicator';
 import space from 'app/styles/space';
 import Button from 'app/components/button';
@@ -21,8 +22,12 @@ import {sortProjects} from 'app/utils';
 import {t} from 'app/locale';
 
 const TeamProjects = createReactClass({
+  propTypes: {
+    api: PropTypes.object,
+  },
+
   displayName: 'TeamProjects',
-  mixins: [ApiMixin, OrganizationState],
+  mixins: [OrganizationState],
 
   getInitialState() {
     return {
@@ -61,7 +66,7 @@ const TeamProjects = createReactClass({
 
     this.setState({loading: true});
 
-    this.api
+    this.props.api
       .requestPromise(`/organizations/${orgId}/projects/`, {
         query: {
           query: `team:${teamId}`,
@@ -85,7 +90,7 @@ const TeamProjects = createReactClass({
   fetchUnlinkedProjects(query) {
     const {params: {orgId, teamId}} = this.props;
 
-    this.api
+    this.props.api
       .requestPromise(`/organizations/${orgId}/projects/`, {
         query: {
           query: query ? `!team:${teamId} ${query}` : `!team:${teamId}`,
@@ -98,7 +103,7 @@ const TeamProjects = createReactClass({
 
   handleLinkProject(project, action) {
     const {orgId, teamId} = this.props.params;
-    this.api.request(`/projects/${orgId}/${project.slug}/teams/${teamId}/`, {
+    this.props.api.request(`/projects/${orgId}/${project.slug}/teams/${teamId}/`, {
       method: action === 'add' ? 'POST' : 'DELETE',
       success: () => {
         this.fetchAll();
@@ -237,4 +242,6 @@ const ProjectListElement = styled('div')`
   padding: ${space(0.25)} 0;
 `;
 
-export default TeamProjects;
+export {TeamProjects};
+
+export default withApi(TeamProjects);

@@ -1,9 +1,10 @@
+import PropTypes from 'prop-types';
 import styled from 'react-emotion';
 import React from 'react';
 import createReactClass from 'create-react-class';
 
 import {update} from 'app/actionCreators/projects';
-import ApiMixin from 'app/mixins/apiMixin';
+import withApi from 'app/utils/withApi';
 import Tooltip from 'app/components/tooltip';
 
 import Link from 'app/components/link';
@@ -21,11 +22,10 @@ const ProjectItem = createReactClass({
   displayName: 'ProjectItem',
 
   propTypes: {
+    api: PropTypes.object,
     project: SentryTypes.Project,
     organization: SentryTypes.Organization,
   },
-
-  mixins: [ApiMixin],
 
   getInitialState() {
     return {
@@ -38,7 +38,7 @@ const ProjectItem = createReactClass({
     const {isBookmarked} = this.state;
 
     this.setState({isBookmarked: !isBookmarked}, () =>
-      update(this.api, {
+      update(this.props.api, {
         orgId: organization.slug,
         projectId: project.slug,
         data: {
@@ -81,4 +81,6 @@ const ProjectItem = createReactClass({
   },
 });
 
-export default ProjectItem;
+export {ProjectItem};
+
+export default withApi(ProjectItem);

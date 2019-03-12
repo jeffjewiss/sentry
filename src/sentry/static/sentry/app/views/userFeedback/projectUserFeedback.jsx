@@ -5,7 +5,7 @@ import {Link, browserHistory} from 'react-router';
 import qs from 'query-string';
 import {omit, isEqual} from 'lodash';
 import SentryTypes from 'app/sentryTypes';
-import ApiMixin from 'app/mixins/apiMixin';
+import withApi from 'app/utils/withApi';
 import GroupStore from 'app/stores/groupStore';
 import LoadingError from 'app/components/loadingError';
 import LoadingIndicator from 'app/components/loadingIndicator';
@@ -22,6 +22,7 @@ const ProjectUserFeedback = createReactClass({
   displayName: 'ProjectUserFeedback',
 
   propTypes: {
+    api: PropTypes.object,
     organization: SentryTypes.Organization.isRequired,
     defaultQuery: PropTypes.string,
     defaultStatus: PropTypes.string,
@@ -32,8 +33,6 @@ const ProjectUserFeedback = createReactClass({
   contextTypes: {
     project: SentryTypes.Project,
   },
-
-  mixins: [ApiMixin],
 
   getDefaultProps() {
     return {
@@ -121,25 +120,28 @@ const ProjectUserFeedback = createReactClass({
       delete query.environment;
     }
 
-    this.api.request(`/projects/${params.orgId}/${params.projectId}/user-reports/`, {
-      query,
-      success: (data, _, jqXHR) => {
-        const issues = data.map(r => r.issue);
-        GroupStore.add(issues);
-        this.setState({
-          error: false,
-          loading: false,
-          reportList: data,
-          pageLinks: jqXHR.getResponseHeader('Link'),
-        });
-      },
-      error: () => {
-        this.setState({
-          error: true,
-          loading: false,
-        });
-      },
-    });
+    this.props.api.request(
+      `/projects/${params.orgId}/${params.projectId}/user-reports/`,
+      {
+        query,
+        success: (data, _, jqXHR) => {
+          const issues = data.map(r => r.issue);
+          GroupStore.add(issues);
+          this.setState({
+            error: false,
+            loading: false,
+            reportList: data,
+            pageLinks: jqXHR.getResponseHeader('Link'),
+          });
+        },
+        error: () => {
+          this.setState({
+            error: true,
+            loading: false,
+          });
+        },
+      }
+    );
   },
 
   getUserFeedbackUrl() {
@@ -226,4 +228,6 @@ const ProjectUserFeedback = createReactClass({
 });
 
 export {ProjectUserFeedback};
-export default withOrganization(withEnvironmentInQueryString(ProjectUserFeedback));
+export default withApi(
+  withOrganization(withEnvironmentInQueryString(ProjectUserFeedback))
+);

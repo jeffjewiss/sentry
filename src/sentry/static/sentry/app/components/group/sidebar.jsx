@@ -5,7 +5,7 @@ import createReactClass from 'create-react-class';
 import classNames from 'classnames';
 
 import SentryTypes from 'app/sentryTypes';
-import ApiMixin from 'app/mixins/apiMixin';
+import withApi from 'app/utils/withApi';
 import SuggestedOwners from 'app/components/group/suggestedOwners';
 import GroupParticipants from 'app/components/group/participants';
 import GroupReleaseStats from 'app/components/group/releaseStats';
@@ -21,6 +21,7 @@ const GroupSidebar = createReactClass({
   displayName: 'GroupSidebar',
 
   propTypes: {
+    api: PropTypes.object,
     project: SentryTypes.Project,
     group: SentryTypes.Group,
     event: SentryTypes.Event,
@@ -31,7 +32,7 @@ const GroupSidebar = createReactClass({
     location: PropTypes.object,
   },
 
-  mixins: [ApiMixin, OrganizationState],
+  mixins: [OrganizationState],
 
   getInitialState() {
     return {participants: [], environments: this.props.environments};
@@ -39,7 +40,7 @@ const GroupSidebar = createReactClass({
 
   componentWillMount() {
     const {group} = this.props;
-    this.api.request(`/issues/${group.id}/participants/`, {
+    this.props.api.request(`/issues/${group.id}/participants/`, {
       success: data => {
         this.setState({
           participants: data,
@@ -54,7 +55,7 @@ const GroupSidebar = createReactClass({
     });
     // Fetch group data for all environments since the one passed in props is filtered for the selected environment
     // The charts rely on having all environment data as well as the data for the selected env
-    this.api.request(`/issues/${group.id}/`, {
+    this.props.api.request(`/issues/${group.id}/`, {
       success: data => {
         this.setState({
           allEnvironmentsGroupData: data,
@@ -80,7 +81,7 @@ const GroupSidebar = createReactClass({
     const {group} = this.props;
 
     // Fetch the top values for the current group's top tags.
-    this.api.request(`/issues/${group.id}/tags/`, {
+    this.props.api.request(`/issues/${group.id}/tags/`, {
       query: pickBy({
         key: group.tags.map(data => data.key),
         environment: this.state.environments.map(env => env.name),
@@ -116,7 +117,7 @@ const GroupSidebar = createReactClass({
     const org = this.getOrganization();
     const loadingIndicator = IndicatorStore.add(t('Saving changes..'));
 
-    this.api.bulkUpdate(
+    this.props.api.bulkUpdate(
       {
         orgId: org.slug,
         projectId: project.slug,
@@ -127,7 +128,7 @@ const GroupSidebar = createReactClass({
       },
       {
         complete: () => {
-          this.api.request(`/issues/${group.id}/participants/`, {
+          this.props.api.request(`/issues/${group.id}/participants/`, {
             success: data => {
               this.setState({
                 participants: data,
@@ -303,4 +304,6 @@ const GroupSidebar = createReactClass({
   },
 });
 
-export default GroupSidebar;
+export {GroupSidebar};
+
+export default withApi(GroupSidebar);

@@ -1,7 +1,8 @@
 import React from 'react';
-import {shallow} from 'enzyme';
 
-import GroupSidebar from 'app/components/group/sidebar';
+import {GroupSidebar} from 'app/components/group/sidebar';
+import {shallow} from 'enzyme';
+import SuggestedOwners from 'app/components/group/suggestedOwners';
 
 describe('GroupSidebar', function() {
   let group = TestStubs.Group({tags: TestStubs.Tags()});
@@ -46,6 +47,7 @@ describe('GroupSidebar', function() {
 
     wrapper = shallow(
       <GroupSidebar
+        api={new MockApiClient()}
         group={group}
         project={project}
         event={TestStubs.Event()}
@@ -67,7 +69,7 @@ describe('GroupSidebar', function() {
 
   describe('renders with tags', function() {
     it('renders', function() {
-      expect(wrapper.find('SuggestedOwners')).toHaveLength(1);
+      expect(wrapper.find(SuggestedOwners)).toHaveLength(1);
       expect(wrapper.find('GroupReleaseStats')).toHaveLength(1);
       expect(wrapper.find('ExternalIssueList')).toHaveLength(1);
       expect(wrapper.find('[data-test-id="group-tag"]')).toHaveLength(5);
@@ -89,6 +91,7 @@ describe('GroupSidebar', function() {
 
       wrapper = shallow(
         <GroupSidebar
+          api={new MockApiClient()}
           group={group}
           project={project}
           event={TestStubs.Event()}

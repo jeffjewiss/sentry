@@ -4,7 +4,7 @@ import React from 'react';
 import createReactClass from 'create-react-class';
 
 import {Panel, PanelBody} from 'app/components/panels';
-import ApiMixin from 'app/mixins/apiMixin';
+import withApi from 'app/utils/withApi';
 import CompactIssue from 'app/components/compactIssue';
 import EmptyMessage from 'app/views/settings/components/emptyMessage';
 import LoadingError from 'app/components/loadingError';
@@ -17,6 +17,7 @@ const IssueList = createReactClass({
   displayName: 'IssueList',
 
   propTypes: {
+    api: PropTypes.object,
     endpoint: PropTypes.string.isRequired,
     emptyText: PropTypes.string,
     query: PropTypes.object,
@@ -27,8 +28,6 @@ const IssueList = createReactClass({
     noBorder: PropTypes.bool,
     noMargin: PropTypes.bool,
   },
-
-  mixins: [ApiMixin],
 
   getDefaultProps() {
     return {
@@ -71,8 +70,8 @@ const IssueList = createReactClass({
 
   fetchData() {
     const location = this.props.location;
-    this.api.clear();
-    this.api.request(this.props.endpoint, {
+    this.props.api.clear();
+    this.props.api.request(this.props.endpoint, {
       method: 'GET',
       query: {
         cursor: (location && location.query && location.query.cursor) || '',
@@ -172,4 +171,6 @@ const IssueList = createReactClass({
   },
 });
 
-export default IssueList;
+export {IssueList};
+
+export default withApi(IssueList);

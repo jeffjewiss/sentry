@@ -8,7 +8,7 @@ import styled from 'react-emotion';
 
 import {t, tct, tn} from 'app/locale';
 import ActionLink from 'app/components/actions/actionLink';
-import ApiMixin from 'app/mixins/apiMixin';
+import withApi from 'app/utils/withApi';
 import Checkbox from 'app/components/checkbox';
 import DropdownLink from 'app/components/dropdownLink';
 import ExternalLink from 'app/components/externalLink';
@@ -136,6 +136,7 @@ const StreamActions = createReactClass({
   displayName: 'StreamActions',
 
   propTypes: {
+    api: PropTypes.object,
     allResultsVisible: PropTypes.bool,
     orgId: PropTypes.string.isRequired,
     projectId: PropTypes.string,
@@ -151,7 +152,7 @@ const StreamActions = createReactClass({
     latestRelease: PropTypes.object,
   },
 
-  mixins: [ApiMixin, Reflux.listenTo(SelectedGroupStore, 'onSelectedGroupChange')],
+  mixins: [Reflux.listenTo(SelectedGroupStore, 'onSelectedGroupChange')],
 
   getDefaultProps() {
     return {
@@ -205,7 +206,7 @@ const StreamActions = createReactClass({
     const {selection} = this.props;
     this.actionSelectedGroups(itemIds => {
       const loadingIndicator = IndicatorStore.add(t('Saving changes..'));
-      this.api.bulkUpdate(
+      this.props.api.bulkUpdate(
         {
           orgId: this.props.orgId,
           itemIds,
@@ -229,7 +230,7 @@ const StreamActions = createReactClass({
     const {selection} = this.props;
 
     this.actionSelectedGroups(itemIds => {
-      this.api.bulkDelete(
+      this.props.api.bulkDelete(
         {
           orgId: this.props.orgId,
           itemIds,
@@ -252,7 +253,7 @@ const StreamActions = createReactClass({
     const {selection} = this.props;
 
     this.actionSelectedGroups(itemIds => {
-      this.api.merge(
+      this.props.api.merge(
         {
           orgId: this.props.orgId,
           itemIds,
@@ -600,4 +601,6 @@ const GraphToggle = styled.a`
   }
 `;
 
-export default StreamActions;
+export {StreamActions};
+
+export default withApi(StreamActions);

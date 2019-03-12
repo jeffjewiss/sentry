@@ -351,7 +351,7 @@ exports[`OrganizationProjects Should render the projects in the store 1`] = `
                               className="css-14o7hgh"
                               is={null}
                             >
-                              <ProjectItem
+                              <withApi(ProjectItem)
                                 organization={
                                   Object {
                                     "access": Array [
@@ -393,57 +393,85 @@ exports[`OrganizationProjects Should render the projects in the store 1`] = `
                                   }
                                 }
                               >
-                                <div
-                                  className={null}
-                                  key="2"
+                                <ProjectItem
+                                  api={Client {}}
+                                  organization={
+                                    Object {
+                                      "access": Array [
+                                        "org:read",
+                                        "org:write",
+                                        "org:admin",
+                                        "org:integrations",
+                                        "project:read",
+                                        "project:write",
+                                        "project:admin",
+                                        "team:read",
+                                        "team:write",
+                                        "team:admin",
+                                      ],
+                                      "features": Array [],
+                                      "id": "3",
+                                      "name": "Organization Name",
+                                      "onboardingTasks": Array [],
+                                      "projects": Array [],
+                                      "scrapeJavaScript": true,
+                                      "slug": "org-slug",
+                                      "status": Object {
+                                        "id": "active",
+                                        "name": "active",
+                                      },
+                                      "teams": Array [],
+                                    }
+                                  }
+                                  project={
+                                    Object {
+                                      "environments": Array [],
+                                      "hasAccess": true,
+                                      "id": "2",
+                                      "isBookmarked": false,
+                                      "isMember": true,
+                                      "name": "Project Name",
+                                      "slug": "project-slug",
+                                      "teams": Array [],
+                                    }
+                                  }
                                 >
-                                  <Tooltip
-                                    title="Add to bookmarks"
+                                  <div
+                                    className={null}
+                                    key="2"
                                   >
-                                    <InlineButton
-                                      className="tip"
-                                      onClick={[Function]}
+                                    <Tooltip
                                       title="Add to bookmarks"
                                     >
-                                      <button
-                                        className="tip css-1ybrnfd-InlineButton enngb6z0"
+                                      <InlineButton
+                                        className="tip"
                                         onClick={[Function]}
                                         title="Add to bookmarks"
                                       >
-                                        <span
-                                          className="icon-star-outline bookmark"
-                                        />
-                                      </button>
-                                    </InlineButton>
-                                  </Tooltip>
-                                  <Link
-                                    to="/org-slug/project-slug/"
-                                  >
-                                    <Link
-                                      onlyActiveOnIndex={false}
-                                      style={Object {}}
-                                      to="/org-slug/project-slug/"
-                                    >
-                                      <a
-                                        onClick={[Function]}
-                                        style={Object {}}
-                                      >
-                                        <ProjectLabel
-                                          project={
-                                            Object {
-                                              "environments": Array [],
-                                              "hasAccess": true,
-                                              "id": "2",
-                                              "isBookmarked": false,
-                                              "isMember": true,
-                                              "name": "Project Name",
-                                              "slug": "project-slug",
-                                              "teams": Array [],
-                                            }
-                                          }
+                                        <button
+                                          className="tip css-1ybrnfd-InlineButton enngb6z0"
+                                          onClick={[Function]}
+                                          title="Add to bookmarks"
                                         >
                                           <span
-                                            className="project-label"
+                                            className="icon-star-outline bookmark"
+                                          />
+                                        </button>
+                                      </InlineButton>
+                                    </Tooltip>
+                                    <Link
+                                      to="/org-slug/project-slug/"
+                                    >
+                                      <Link
+                                        onlyActiveOnIndex={false}
+                                        style={Object {}}
+                                        to="/org-slug/project-slug/"
+                                      >
+                                        <a
+                                          onClick={[Function]}
+                                          style={Object {}}
+                                        >
+                                          <ProjectLabel
                                             project={
                                               Object {
                                                 "environments": Array [],
@@ -458,17 +486,33 @@ exports[`OrganizationProjects Should render the projects in the store 1`] = `
                                             }
                                           >
                                             <span
-                                              className="project-name"
+                                              className="project-label"
+                                              project={
+                                                Object {
+                                                  "environments": Array [],
+                                                  "hasAccess": true,
+                                                  "id": "2",
+                                                  "isBookmarked": false,
+                                                  "isMember": true,
+                                                  "name": "Project Name",
+                                                  "slug": "project-slug",
+                                                  "teams": Array [],
+                                                }
+                                              }
                                             >
-                                              project-slug
+                                              <span
+                                                className="project-name"
+                                              >
+                                                project-slug
+                                              </span>
                                             </span>
-                                          </span>
-                                        </ProjectLabel>
-                                      </a>
+                                          </ProjectLabel>
+                                        </a>
+                                      </Link>
                                     </Link>
-                                  </Link>
-                                </div>
-                              </ProjectItem>
+                                  </div>
+                                </ProjectItem>
+                              </withApi(ProjectItem)>
                             </div>
                           </Base>
                         </Box>

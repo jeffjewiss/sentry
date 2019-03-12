@@ -1,7 +1,7 @@
 import React from 'react';
 import {shallow, mount} from 'enzyme';
 
-import Configure from 'app/views/onboarding/configure';
+import {Configure} from 'app/views/onboarding/configure';
 import ProjectsStore from 'app/stores/projectsStore';
 
 describe('Configure should render correctly', function() {
@@ -77,6 +77,7 @@ describe('Configure should render correctly', function() {
 
   describe('render()', function() {
     const baseProps = {
+      api: new MockApiClient(),
       next: () => {},
       params: {
         projectId: 'project-slug',

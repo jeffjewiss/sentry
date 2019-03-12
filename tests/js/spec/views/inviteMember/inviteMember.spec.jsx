@@ -7,8 +7,10 @@ import ConfigStore from 'app/stores/configStore';
 jest.mock('app/api');
 jest.mock('jquery');
 
-describe('CreateProject', function() {
+describe('InviteMember', function() {
+  let sandbox;
   const baseProps = {
+    api: new MockApiClient(),
     params: {
       orgId: 'testOrg',
     },

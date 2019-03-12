@@ -9,7 +9,7 @@ import {Panel} from 'app/components/panels';
 import {getPlatformName} from 'app/views/onboarding/utils';
 import {openCreateTeamModal} from 'app/actionCreators/modal';
 import {t} from 'app/locale';
-import ApiMixin from 'app/mixins/apiMixin';
+import withApi from 'app/utils/withApi';
 import Button from 'app/components/button';
 import HookStore from 'app/stores/hookStore';
 import OnboardingProject from 'app/views/onboarding/project';
@@ -23,6 +23,7 @@ const CreateProject = createReactClass({
   displayName: 'CreateProject',
 
   propTypes: {
+    api: PropTypes.object,
     getDocsUrl: PropTypes.func,
   },
 
@@ -32,7 +33,6 @@ const CreateProject = createReactClass({
   },
 
   mixins: [
-    ApiMixin,
     OrganizationState,
     Reflux.listenTo(TeamActions.createTeamSuccess, 'onTeamCreated'),
   ],
@@ -101,7 +101,7 @@ const CreateProject = createReactClass({
       });
     }
 
-    this.api.request(`/teams/${slug}/${team}/projects/`, {
+    this.props.api.request(`/teams/${slug}/${team}/projects/`, {
       method: 'POST',
       data: {
         name: projectName,
@@ -193,7 +193,9 @@ const CreateProject = createReactClass({
   },
 });
 
-export default CreateProject;
+export {CreateProject};
+
+export default withApi(CreateProject);
 
 const CreateTeamBody = styled('div')`
   display: flex;

@@ -30,7 +30,7 @@ exports[`NewProjectPlatform render() should render 1`] = `
       <SideEffect(DocumentTitle)
         title="Sentry"
       />
-      <CreateProject
+      <withApi(CreateProject)
         getDocsUrl={[Function]}
       />
     </Content>
