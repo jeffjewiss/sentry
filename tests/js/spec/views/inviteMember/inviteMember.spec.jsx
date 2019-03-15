@@ -8,7 +8,6 @@ jest.mock('app/api');
 jest.mock('jquery');
 
 describe('InviteMember', function() {
-  let sandbox;
   const baseProps = {
     api: new MockApiClient(),
     params: {

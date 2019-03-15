@@ -15,10 +15,10 @@ import Waiting from 'app/views/onboarding/configure/waiting';
 import {t} from 'app/locale';
 
 const Configure = createReactClass({
+  displayName: 'Configure',
   propTypes: {
     api: PropTypes.object,
   },
-  displayName: 'Configure',
   contextTypes: {
     organization: SentryTypes.Organization,
   },
