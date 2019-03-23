@@ -1,12 +1,14 @@
 ---
-created: '2019-03-23T18:16:45.843125Z'
+created: '2019-03-23T19:20:56.864731Z'
 creator: sentry
 source: tests/sentry/grouping/test_enhancer.py
 ---
+bases:
+- common:v1
 rules:
 - actions:
   - flag: true
-    key: in-app
+    key: app
     range: null
   matchers:
   - key: path
@@ -44,14 +46,14 @@ rules:
     pattern: ThreadStartMac
 - actions:
   - flag: false
-    key: in-app
+    key: app
     range: null
   matchers:
   - key: module
     pattern: std::*
 - actions:
   - flag: false
-    key: in-app
+    key: app
     range: null
   matchers:
   - key: module

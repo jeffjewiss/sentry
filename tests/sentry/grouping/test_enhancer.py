@@ -24,14 +24,14 @@ def dump_obj(obj):
 def test_basic_parsing(insta_snapshot):
     enhancement = Enhancements.from_config_string('''
 # This is a config
-path:*/code/game/whatever/*                     +in-app
+path:*/code/game/whatever/*                     +app
 function:panic_handler                          ^-keep -keep
 function:ThreadStartWin32                       v-keep
 function:ThreadStartLinux                       v-keep
 function:ThreadStartMac                         v-keep
-module:std::*                                   -in-app
-module:core::*                                  -in-app
-''')
+module:std::*                                   -app
+module:core::*                                  -app
+''', bases=['common:v1'])
 
     dumped = enhancement.dumps()
     insta_snapshot(dump_obj(enhancement))

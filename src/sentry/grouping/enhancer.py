@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import os
 import six
 import base64
 import msgpack
@@ -22,7 +23,7 @@ matcher_type   = "path" / "function" / "module"
 
 actions        = action+
 action         = _ range? flag action_name
-action_name    = "keep" / "group" / "in-app"
+action_name    = "keep" / "group" / "app"
 flag           = "+" / "-"
 range          = "^" / "v"
 
@@ -49,7 +50,7 @@ MATCH_KEYS = {
 }
 SHORT_MATCH_KEYS = dict((v, k) for k, v in six.iteritems(MATCH_KEYS))
 
-ACTIONS = ['keep', 'group', 'in-app']
+ACTIONS = ['keep', 'group', 'app']
 ACTION_FLAGS = {
     (True, None): 0,
     (True, 'up'): 1,
@@ -93,21 +94,35 @@ class Action(object):
 
 class Enhancements(object):
 
-    def __init__(self, rules, version):
+    def __init__(self, rules, version=None, bases=None):
         self.rules = rules
+        if version is None:
+            version = VERSION
         self.version = version
+        if bases is None:
+            bases = []
+        self.bases = bases
 
     def _to_config_structure(self):
-        return [self.version, [x._to_config_structure() for x in self.rules]]
+        return [self.version, self.bases, [x._to_config_structure() for x in self.rules]]
 
     def dumps(self):
         return base64.urlsafe_b64encode(msgpack.dumps(
             self._to_config_structure()).encode('zlib')).strip('=')
 
+    def iter_rules(self):
+        for base in self.bases:
+            base = ENHANCEMENT_BASES.get(base)
+            if base:
+                for rule in base.iter_rules():
+                    yield rule
+        for rule in self.rules:
+            yield rule
+
     @classmethod
     def _from_config_structure(cls, data):
-        version, rules = data
-        return cls([Rule._from_config_structure(x) for x in rules], version)
+        version, bases, rules = data
+        return cls([Rule._from_config_structure(x) for x in rules], version, bases)
 
     @classmethod
     def loads(cls, data):
@@ -119,9 +134,9 @@ class Enhancements(object):
             raise ValueError('invalid grouping enhancement config: %s' % e)
 
     @classmethod
-    def from_config_string(self, s):
+    def from_config_string(self, s, bases=None):
         tree = enhancements_grammar.parse(s)
-        return EnhancmentsVisitor().visit(tree)
+        return EnhancmentsVisitor(bases).visit(tree)
 
 
 class Rule(object):
@@ -145,8 +160,11 @@ class Rule(object):
 class EnhancmentsVisitor(NodeVisitor):
     visit_comment = visit_empty = lambda *a: None
 
+    def __init__(self, bases):
+        self.bases = bases
+
     def visit_enhancements(self, node, children):
-        return Enhancements(filter(None, children), version=VERSION)
+        return Enhancements(filter(None, children), bases=self.bases)
 
     def visit_line(self, node, children):
         _, line, _ = children
@@ -196,3 +214,19 @@ class EnhancmentsVisitor(NodeVisitor):
 
     def generic_visit(self, node, children):
         return children
+
+
+def _load_configs():
+    rv = {}
+    base = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'enhancement-configs')
+    for fn in os.listdir(base):
+        if fn.endswith('.txt'):
+            with open(os.path.join(base, fn)) as f:
+                rv[fn[:-4]] = Enhancements.from_config_string(f.read().decode('utf-8'))
+    return rv
+
+
+ENHANCEMENT_BASES = _load_configs()
+LATEST_ENHANCEMENT_BASE = sorted(x for x in ENHANCEMENT_BASES
+                                 if x.startswith('common:'))[-1]
+del _load_configs
