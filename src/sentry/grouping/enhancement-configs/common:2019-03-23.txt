@@ -1,3 +1,5 @@
+## * The default configuration of stacktrace grouping enhancers
+
 # exclude common paths
 path:/usr/lib/*                                     -app
 path:/usr/local/lib/*                               -app

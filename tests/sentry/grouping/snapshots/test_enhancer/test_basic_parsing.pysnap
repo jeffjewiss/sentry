@@ -1,10 +1,12 @@
 ---
-created: '2019-03-23T19:20:56.864731Z'
+created: '2019-03-23T20:48:50.811096Z'
 creator: sentry
 source: tests/sentry/grouping/test_enhancer.py
 ---
 bases:
 - common:v1
+changelog: null
+id: null
 rules:
 - actions:
   - flag: true

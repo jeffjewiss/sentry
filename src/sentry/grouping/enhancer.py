@@ -4,8 +4,12 @@ import os
 import six
 import base64
 import msgpack
+import inspect
 
 from parsimonious.grammar import Grammar, NodeVisitor
+from parsimonious.exceptions import ParseError
+
+from sentry.utils.compat import implements_to_string
 
 
 # Grammar is defined in EBNF syntax.
@@ -62,6 +66,10 @@ ACTION_FLAGS = {
 REVERSE_ACTION_FLAGS = dict((v, k) for k, v in six.iteritems(ACTION_FLAGS))
 
 
+class InvalidEnhancerConfig(Exception):
+    pass
+
+
 class Match(object):
 
     def __init__(self, key, pattern):
@@ -76,12 +84,20 @@ class Match(object):
         return cls(SHORT_MATCH_KEYS[obj[0]], obj[1:])
 
 
+@implements_to_string
 class Action(object):
 
     def __init__(self, key, flag, range):
         self.key = key
         self.flag = flag
         self.range = range
+
+    def __str__(self):
+        return '%s%s%s' % (
+            {'up': '^', 'down': 'v'}.get(self.range, ''),
+            self.flag and '+' or '-',
+            self.key,
+        )
 
     def _to_config_structure(self):
         return ACTIONS.index(self.key) | (ACTION_FLAGS[self.flag, self.range] << 5)
@@ -94,14 +110,26 @@ class Action(object):
 
 class Enhancements(object):
 
-    def __init__(self, rules, version=None, bases=None):
+    def __init__(self, rules, changelog=None, version=None, bases=None, id=None):
+        self.id = id
         self.rules = rules
+        self.changelog = changelog
         if version is None:
             version = VERSION
         self.version = version
         if bases is None:
             bases = []
         self.bases = bases
+
+    def as_dict(self, with_rules=False):
+        rv = {
+            'id': self.id,
+            'changelog': self.changelog,
+            'bases': self.bases,
+        }
+        if with_rules:
+            rv['rules'] = [x.as_dict() for x in self.rules]
+        return rv
 
     def _to_config_structure(self):
         return [self.version, self.bases, [x._to_config_structure() for x in self.rules]]
@@ -134,9 +162,17 @@ class Enhancements(object):
             raise ValueError('invalid grouping enhancement config: %s' % e)
 
     @classmethod
-    def from_config_string(self, s, bases=None):
-        tree = enhancements_grammar.parse(s)
-        return EnhancmentsVisitor(bases).visit(tree)
+    def from_config_string(self, s, bases=None, id=None):
+        try:
+            tree = enhancements_grammar.parse(s)
+        except ParseError as e:
+            context = e.text[e.pos:e.pos + 33]
+            if len(context) == 33:
+                context = context[:-1] + '...'
+            raise InvalidEnhancerConfig('Invalid syntax near "%s" (line %s, column %s)' % (
+                context, e.line(), e.column(),
+            ))
+        return EnhancmentsVisitor(bases, id).visit(tree)
 
 
 class Rule(object):
@@ -144,6 +180,15 @@ class Rule(object):
     def __init__(self, matchers, actions):
         self.matchers = matchers
         self.actions = actions
+
+    def as_dict(self):
+        matchers = {}
+        for matcher in self.matchers:
+            matchers[matcher.key] = matcher.pattern
+        return {
+            'match': matchers,
+            'actions': [six.text_type(x) for x in self.actions],
+        }
 
     def _to_config_structure(self):
         return [
@@ -160,11 +205,32 @@ class Rule(object):
 class EnhancmentsVisitor(NodeVisitor):
     visit_comment = visit_empty = lambda *a: None
 
-    def __init__(self, bases):
+    def __init__(self, bases, id=None):
         self.bases = bases
+        self.id = id
+
+    def visit_comment(self, node, children):
+        return node.text
 
     def visit_enhancements(self, node, children):
-        return Enhancements(filter(None, children), bases=self.bases)
+        changelog = []
+        rules = []
+        in_header = True
+        for child in children:
+            if isinstance(child, six.string_types):
+                if in_header and child[:2] == '##':
+                    changelog.append(child[2:].rstrip())
+                else:
+                    in_header = False
+            elif child is not None:
+                rules.append(child)
+                in_header = False
+        return Enhancements(
+            rules,
+            inspect.cleandoc('\n'.join(changelog)).rstrip() or None,
+            bases=self.bases,
+            id=self.id,
+        )
 
     def visit_line(self, node, children):
         _, line, _ = children
@@ -222,11 +288,12 @@ def _load_configs():
     for fn in os.listdir(base):
         if fn.endswith('.txt'):
             with open(os.path.join(base, fn)) as f:
-                rv[fn[:-4]] = Enhancements.from_config_string(f.read().decode('utf-8'))
+                rv[fn[:-4]] = Enhancements.from_config_string(f.read().decode('utf-8'), id=fn[:-4])
     return rv
 
 
 ENHANCEMENT_BASES = _load_configs()
 LATEST_ENHANCEMENT_BASE = sorted(x for x in ENHANCEMENT_BASES
                                  if x.startswith('common:'))[-1]
+DEFAULT_ENHANCEMENTS_CONFIG = Enhancements(rules=[], bases=[LATEST_ENHANCEMENT_BASE]).dumps()
 del _load_configs
