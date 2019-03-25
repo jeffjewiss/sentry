@@ -57,7 +57,8 @@ def _get_project_enhancements_config(project):
     # shortcut
     from sentry.utils.cache import cache
     from sentry.utils.hashlib import md5_text
-    cache_key = 'grouping-enhancements:' + md5_text('%s|%s' % (enhancements_base, enhancements))
+    cache_key = 'grouping-enhancements:' + \
+        md5_text('%s|%s' % (enhancements_base, enhancements)).hexdigest()
     rv = cache.get(cache_key)
     if rv is not None:
         return rv
