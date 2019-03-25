@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import {RECENT_SEARCH_TYPES} from 'app/constants';
+import {SAVED_SEARCH_TYPES} from 'app/constants';
 import {fetchRecentSearches} from 'app/actionCreators/savedSearches';
 import {t} from 'app/locale';
 import SentryTypes from 'app/sentryTypes';
@@ -82,6 +82,11 @@ class SearchBar extends React.Component {
     return organization && organization.features.includes('recent-searches');
   };
 
+  hasOrgSavedSearches = () => {
+    const {organization} = this.props;
+    return organization && organization.features.includes('org-saved-searches');
+  };
+
   fetchData = async () => {
     if (!this.hasRecentSearches()) {
       this.setState({
@@ -128,7 +133,7 @@ class SearchBar extends React.Component {
     const recent = await fetchRecentSearches(
       api,
       orgId,
-      RECENT_SEARCH_TYPES.ISSUE,
+      SAVED_SEARCH_TYPES.ISSUE,
       fullQuery
     );
     return (recent && recent.map(({query}) => query)) || [];
@@ -155,7 +160,8 @@ class SearchBar extends React.Component {
         onGetTagValues={this.getTagValues}
         defaultSearchItems={this.state.defaultSearchItems}
         maxSearchItems={5}
-        recentSearchType={RECENT_SEARCH_TYPES.ISSUE}
+        hasPinnedSearch={this.hasOrgSavedSearches()}
+        savedSearchType={SAVED_SEARCH_TYPES.ISSUE}
         displayRecentSearches={this.hasRecentSearches()}
         onSavedRecentSearch={this.handleSavedRecentSearch}
         allowPin
