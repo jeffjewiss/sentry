@@ -8,6 +8,7 @@ import {addSuccessMessage, addErrorMessage} from 'app/actionCreators/indicator';
 import {addQueryParamsToExistingUrl} from 'app/utils/queryString';
 import AsyncComponent from 'app/components/asyncComponent';
 import FieldFromConfig from 'app/views/settings/components/forms/fieldFromConfig';
+import FormModel from 'app/views/settings/components/forms/model';
 import Form from 'app/views/settings/components/forms/form';
 import SentryTypes from 'app/sentryTypes';
 import {t} from 'app/locale';
@@ -197,6 +198,11 @@ export class SentryAppExternalIssueForm extends React.Component {
     onSubmitSuccess: PropTypes.func,
   };
 
+  constructor(props) {
+    super(props);
+    this.model = new FormModel();
+  }
+
   onSubmitSuccess = issue => {
     ExternalIssueStore.add(issue);
     this.props.onSubmitSuccess(issue);
@@ -235,17 +241,17 @@ export class SentryAppExternalIssueForm extends React.Component {
       return '';
     }
 
+    this.model.setValue('action', this.props.action);
+    this.model.setValue('groupId', this.props.group.id);
+    this.model.setValue('uri', config.uri);
+
     return (
       <Form
         apiEndpoint={`/sentry-app-installations/${sentryAppInstallation.uuid}/external-issues/`}
         apiMethod="POST"
         onSubmitSuccess={this.onSubmitSuccess}
         onSubmitError={this.onSubmitError}
-        initialData={{
-          action: this.props.action,
-          groupId: this.props.group.id,
-          uri: config.uri,
-        }}
+        model={this.model}
       >
         {requiredFields.map(field => {
           field.choices = field.choices || [];

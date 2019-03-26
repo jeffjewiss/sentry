@@ -35,14 +35,6 @@ describe('SentryAppExternalIssueForm', () => {
       );
     });
 
-    it('specifies the action', () => {
-      expect(wrapper.find('Form').prop('initialData').action).toEqual('create');
-    });
-
-    it('specifies the group', () => {
-      expect(wrapper.find('Form').prop('initialData').groupId).toEqual(group.id);
-    });
-
     it('renders each required_fields field', () => {
       component.schema.create.required_fields.forEach(field => {
         expect(wrapper.exists(`#${field.name}`)).toBe(true);
@@ -53,6 +45,21 @@ describe('SentryAppExternalIssueForm', () => {
       const url = `/sentry-app-installations/${sentryAppInstallation.uuid}/external-issues/`;
       expect(wrapper.find('Form').prop('apiEndpoint')).toEqual(url);
       expect(wrapper.find('Form').prop('apiMethod')).toEqual('POST');
+    });
+
+    it('renders prepopulated defaults', () => {
+      const titleField = wrapper.find('Input#title');
+      const descriptionField = wrapper.find('TextArea#description');
+
+      const url = addQueryParamsToExistingUrl(group.permalink, {
+        referrer: sentryApp.name,
+      });
+
+      expect(titleField.prop('value')).toEqual(`${group.title}`);
+
+      expect(descriptionField.prop('value')).toEqual(
+        `Sentry Issue: [${group.shortId}](${url})`
+      );
     });
   });
 
@@ -69,35 +76,10 @@ describe('SentryAppExternalIssueForm', () => {
       );
     });
 
-    it('specifies the action', () => {
-      expect(wrapper.find('Form').prop('initialData').action).toEqual('link');
-    });
-
-    it('specifies the group', () => {
-      expect(wrapper.find('Form').prop('initialData').groupId).toEqual(group.id);
-    });
-
     it('renders each required_fields field', () => {
       component.schema.link.required_fields.forEach(field => {
         expect(wrapper.exists(`#${field.name}`)).toBe(true);
       });
-    });
-
-    it('renders prepopulated defaults', () => {
-      const issueTitleField = 'Input #a';
-      const issueDescriptionField = 'TextArea #c';
-      const url = addQueryParamsToExistingUrl(group.permalink, {
-        referrer: sentryApp.name,
-      });
-      const description = `Sentry Issue: [${group.shortId}](${url})`;
-
-      expect(wrapper.find(issueTitleField).prop('value')).toEqual(`${group.title}`);
-      expect(
-        wrapper
-          .find(issueDescriptionField)
-          .first()
-          .prop('value')
-      ).toEqual(description);
     });
 
     it('submits to the New External Issue endpoint', () => {
