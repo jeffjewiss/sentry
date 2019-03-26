@@ -9,8 +9,8 @@ import IssueSyncListElement, {
   IntegrationLink,
   IntegrationIcon,
 } from 'app/components/issueSyncListElement';
-import ExternalIssueForm, {
-  SentryAppExternalIssueForm,
+import SentryAppExternalIssueForm, {
+  ExternalIssueForm,
 } from 'app/components/group/externalIssueForm';
 import IntegrationItem from 'app/views/organizationIntegrations/integrationItem';
 import NavTabs from 'app/components/navTabs';

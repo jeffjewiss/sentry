@@ -11,6 +11,7 @@ import FieldFromConfig from 'app/views/settings/components/forms/fieldFromConfig
 import Form from 'app/views/settings/components/forms/form';
 import SentryTypes from 'app/sentryTypes';
 import {t} from 'app/locale';
+import withApi from 'app/utils/withApi';
 import ExternalIssueStore from 'app/stores/externalIssueStore';
 
 const MESSAGES_BY_ACTION = {
@@ -188,8 +189,9 @@ class ExternalIssueForm extends AsyncComponent {
   }
 }
 
-export class SentryAppExternalIssueForm extends React.Component {
+class SentryAppExternalIssueForm extends React.Component {
   static propTypes = {
+    api: PropTypes.object.isRequired,
     group: SentryTypes.Group.isRequired,
     sentryAppInstallation: PropTypes.object,
     config: PropTypes.object.isRequired,
@@ -224,6 +226,44 @@ export class SentryAppExternalIssueForm extends React.Component {
         return '';
     }
   }
+
+  getOptions = (field, input) => {
+    return new Promise(resolve => {
+      this.debouncedOptionLoad(field, input, resolve);
+    });
+  };
+
+  debouncedOptionLoad = debounce(
+    (field, input, resolve) => {
+      const install = this.props.sentryAppInstallation;
+      const projectId = this.props.group.project.id;
+
+      this.props.api
+        .requestPromise(`/sentry-app-installations/${install.uuid}/external-requests/`, {
+          query: {
+            projectId,
+            uri: field.uri,
+            query: input,
+          },
+        })
+        .then(data => resolve({options: data}));
+    },
+    200,
+    {trailing: true}
+  );
+
+  fieldProps = field => {
+    return field.url
+      ? {
+          loadOptions: input => this.getOptions(field, input),
+          async: true,
+          cache: false,
+          onSelectResetsInput: false,
+          onCloseResetsInput: false,
+          onBlurResetsInput: false,
+        }
+      : {};
+  };
 
   render() {
     const {sentryAppInstallation} = this.props;
@@ -261,6 +301,7 @@ export class SentryAppExternalIssueForm extends React.Component {
               stacked
               flexibleControlStateSize
               required={true}
+              {...this.fieldProps(field)}
             />
           );
         })}
@@ -278,6 +319,7 @@ export class SentryAppExternalIssueForm extends React.Component {
               inline={false}
               stacked
               flexibleControlStateSize
+              {...this.fieldProps(field)}
             />
           );
         })}
@@ -286,4 +328,6 @@ export class SentryAppExternalIssueForm extends React.Component {
   }
 }
 
-export default ExternalIssueForm;
+export {SentryAppExternalIssueForm};
+export default withApi(SentryAppExternalIssueForm);
+export {ExternalIssueForm};
