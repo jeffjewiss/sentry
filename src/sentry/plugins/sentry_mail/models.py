@@ -162,7 +162,12 @@ class MailPlugin(NotificationPlugin):
                         is_active=True,
                         sentry_orgmember_set__organizationmemberteam__team__id__in=teams_to_resolve,
                     ).values_list('id', flat=True)
-                return send_to_list
+
+                alert_settings = project.get_member_alert_settings(self.alert_option_key)
+                disabled_users = set(
+                    user for user, setting in alert_settings.items() if setting == 0
+                )
+                return set([user for user in send_to_list if user not in disabled_users])
             else:
                 metrics.incr(
                     'features.owners.send_to',
